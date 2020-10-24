@@ -1,0 +1,381 @@
+## 导入相应的库
+from bs4 import BeautifulSoup
+from selenium import webdriver
+import pandas as pd
+import pyautogui,pyperclip
+import time
+## 传统登录方法_太老套
+browser = webdriver.Chrome()
+url = 'http://erya.mooc.chaoxing.com/'
+browser.implicitly_wait(5)
+browser.get(url)
+browser.implicitly_wait(5)
+browser.find_element_by_link_text("登录").click()
+element = browser.find_element_by_xpath('//*[@id="phone"]')
+element.send_keys('18233702664')
+element = browser.find_element_by_xpath('//*[@id="pwd"]').click()
+time.sleep(0.1)
+pyautogui.write("200011\n")
+ac = ActionChains(browser)
+ac.move_to_element(browser.find_element_by_xpath('/html/body/div/div[1]/div/div/div[2]/div/div/div[1]')).perform()
+browser.implicitly_wait(5)
+browser.find_element_by_xpath('/html/body/div/div[1]/div/div/div[2]/div/div/div[3]/a[1]').click()
+browser.implicitly_wait(5)
+browser.execute_script("window.scrollBy(0,1000)")
+browser.find_element_by_css_selector('[title="操作系统原理及应用"]').click()
+## 在这里我们利用cookies直接登录进去
+## 获得cookies的方法
+url = input("请输入操作系统考试链接：")
+driver = webdriver.Chrome()
+driver.get(url)
+print(driver.get_cookies())
+time.sleep(30)
+print(driver.get_cookies())
+## 开始进行
+# 寻找答案函数
+def find_ans(que,res):
+    try:
+        answ = list(res[res["题目"] == que]["答案"])[0]
+        return answ
+    except:
+        return 0
+# MAIN
+# 导入题库
+res = pd.read_excel("res.xlsx")
+url = input("请输入操作系统考试链接：")
+driver = webdriver.Chrome()
+driver.implicitly_wait(5)
+cookies = [{'domain': '.chaoxing.com', 'httpOnly': False, 'name': 'thirdRegist', 'path': '/', 'secure': False, 'value': '0'}, {'domain': '.chaoxing.com', 'httpOnly': False, 'name': 'source', 'path': '/', 'secure': False, 'value': '""'}, {'domain': 'i.mooc.chaoxing.com', 'httpOnly': True, 'name': 'JSESSIONID', 'path': '/', 'secure': False, 'value': '86C935EFBD26B8AC1567C9C6804A0CD4'}, {'domain': '.chaoxing.com', 'expiry': 1606039365, 'httpOnly': False, 'name': 'DSSTASH_LOG', 'path': '/', 'secure': False, 'value': 'C_38-UN_5306-US_108484974-T_1603447366659'}, {'domain': '.chaoxing.com', 'expiry': 1606039365, 'httpOnly': False, 'name': 'xxtenc', 'path': '/', 'secure': False, 'value': '9b8dfa1614a5c3898a426f9754ae5415'}, {'domain': '.chaoxing.com', 'expiry': 1606039365, 'httpOnly': False, 'name': 'UID', 'path': '/', 'secure': False, 'value': '108484974'}, {'domain': '.chaoxing.com', 'expiry': 1606039365, 'httpOnly': True, 'name': 'vc3', 'path': '/', 'secure': False, 'value': 'fm%2B71sn5lHJVnWxFB1uNnZgwMeM4svBMXqxeKTxLsXZp%2FuIIaneK0QArfcOpNtfbOLpxtitUsddbTZOE9aNm%2BuwCuOIg%2BLBQm8PZZgfEX59zr5jh8NvJtviutaaxpyg4S%2FWB4P9NhUodicm%2F%2FkvI04hBuFqB7fN1sRtrB5BUZlA%3Def1f713f05d79c19e290a7c89f35f466'}, {'domain': '.chaoxing.com', 'expiry': 1606039365, 'httpOnly': True, 'name': 'vc', 'path': '/', 'secure': False, 'value': '5BFEAE5591B3C488B971AF00EFA9867D'}, {'domain': '.chaoxing.com', 'expiry': 1603533770, 'httpOnly': False, 'name': 'tl', 'path': '/', 'secure': False, 'value': '1'}, {'domain': '.chaoxing.com', 'expiry': 1606039365, 'httpOnly': True, 'name': 'vc2', 'path': '/', 'secure': False, 'value': '87310B48CD4D1FFE34871632F82E90B8'}, {'domain': '.chaoxing.com', 'expiry': 1606039365, 'httpOnly': False, 'name': '_d', 'path': '/', 'secure': False, 'value': '1603447366658'}, {'domain': '.chaoxing.com', 'expiry': 1606039365, 'httpOnly': False, 'name': '_uid', 'path': '/', 'secure': False, 'value': '108484974'}, {'domain': '.chaoxing.com', 'expiry': 1606039365, 'httpOnly': False, 'name': 'uf', 'path': '/', 'secure': False, 'value': 'b2d2c93beefa90dc9188507c473782d1d0adaab9a33442b0bd78385eb9f576597aa90463a84b720841ae5a607e3c33dd2a80cd29a298e70788b83130e7eb470494bd1582608cbc56aa8e8071455740dd41f23d7060bd78cc1288b607060c1fb6916675ce185bde81aa2ebad65cd196bb'}, {'domain': '.chaoxing.com', 'expiry': 1606039365, 'httpOnly': False, 'name': 'fid', 'path': '/', 'secure': False, 'value': '18078'}, {'domain': 'i.mooc.chaoxing.com', 'httpOnly': False, 'name': 'route', 'path': '/', 'secure': False, 'value': '25c5b3ea765bd1e462f3554e01560f4d'}, {'domain': '.chaoxing.com', 'expiry': 1606039365, 'httpOnly': False, 'name': 'lv', 'path': '/', 'secure': False, 'value': '1'}]
+# 清除一下cookie
+driver.delete_all_cookies()
+driver.implicitly_wait(5)
+# 打开浏览器后添加访问地址后，添加cookie
+driver.get(url)
+for i in range(len(cookies)):
+    time.sleep(0.1)
+    driver.add_cookie(cookies[i])
+driver.get(url)
+
+def select_A():
+    driver.find_element_by_xpath('//*[@id="submitTest"]/div[2]/ul[2]/li[1]/label/input').click()
+def select_B():
+    driver.find_element_by_xpath('//*[@id="submitTest"]/div[2]/ul[2]/li[2]/label/input').click()
+def select_C():
+    driver.find_element_by_xpath('//*[@id="submitTest"]/div[2]/ul[2]/li[3]/label/input').click()
+def select_D():
+    driver.find_element_by_xpath('//*[@id="submitTest"]/div[2]/ul[2]/li[4]/label/input').click()
+def next_ques():
+    driver.find_element_by_xpath('//*[@id="ZyBottom"]/div[2]/div/a[3]').click()
+def write_ans(sta,ans):
+    element = driver.find_element_by_xpath(sta)
+    time.sleep(2)
+    element.send_keys(ans)
+    
+# 选择题
+for i in range(40):
+    # 选择选项
+    time.sleep(1)
+    pagesource = driver.page_source
+    soup = BeautifulSoup(pagesource)
+    question = soup.find_all(class_ ="clearfix")
+    ques = question[3].text.strip('\n').strip('\t').strip('\n').split('\t')[-1]
+    answe = find_ans(ques,res)
+    answer = [i.text for i in soup.find_all('a',href='javascript:void(0);')]
+    try:
+        choo = answer.index(answe)
+    except:
+        choo = -1
+    if choo==0:
+        select_A()
+    elif choo==1:
+        select_B()
+    elif choo==2:
+        select_C()
+    elif choo==3:
+        select_D()
+    else:
+        pass
+    next_ques()
+    
+# 填空题
+for i in range(11):
+    time.sleep(1)
+    
+    pagesource = driver.page_source
+    soup = BeautifulSoup(pagesource)
+    question = soup.find_all('div',class_='clearfix')
+    ques = question[3].text.strip('\n').strip('\t').strip('\n').split('\t')[-1]
+    answer = find_ans(ques,res)
+    if "第三空" in answer:
+        inter2 = answer.split("第三空：")[-1]
+        inter1 = answer.split("第三空：")[0].split("第二空：")[-1]
+        inter1 = answer.split("第三空：")[0].split("第二空：")[0][4:]
+        time.sleep(1)
+        driver.find_element_by_xpath('//*[@id="ueditor_0"]').click()
+        write_ans('//*[@id="ueditor_0"]',inter0)
+        time.sleep(1)
+        driver.find_element_by_xpath('//*[@id="ueditor_1"]').click()
+        write_ans('//*[@id="ueditor_1"]',inter1)
+        time.sleep(1)
+        driver.find_element_by_xpath('//*[@id="ueditor_2"]').click()
+        write_ans('//*[@id="ueditor_2"]',inter2)
+    elif "第二空" in answer:
+        inter1 = answer.split("第二空：")[-1]
+        inter0 = answer.split("第二空：")[0][4:]
+        time.sleep(1)
+        driver.find_element_by_xpath('//*[@id="ueditor_0"]').click()
+        write_ans('//*[@id="ueditor_0"]',inter0)
+        time.sleep(1)
+        driver.find_element_by_xpath('//*[@id="ueditor_1"]').click()
+        write_ans('//*[@id="ueditor_1"]',inter1)
+    else:
+        inter0 = answer.split("第一空：")[-1]
+        time.sleep(1)
+        driver.find_element_by_xpath('//*[@id="ueditor_0"]').click()
+        write_ans('//*[@id="ueditor_0"]',inter0)
+    next_ques()
+     
+#简答题
+time.sleep(1)
+pagesource = driver.page_source
+soup = BeautifulSoup(pagesource)
+question = soup.find_all('div',class_='clearfix')
+ques = question[3].text.strip('\n').strip('\t').strip('\n').split('\t')[-1]
+answer = find_ans(ques,res)
+if "第三空" in answer:
+    inter2 = answer.split("第三空：")[-1]
+    inter1 = answer.split("第三空：")[0].split("第二空：")[-1]
+    inter0 = answer.split("第三空：")[0].split("第二空：")[0][4:]
+    time.sleep(1)
+    driver.find_element_by_xpath('//*[@id="ueditor_0"]').click()
+    write_ans('//*[@id="ueditor_0"]',inter0)
+    time.sleep(1)
+    driver.find_element_by_xpath('//*[@id="ueditor_1"]').click()
+    write_ans('//*[@id="ueditor_1"]',inter1)
+    time.sleep(1)
+    driver.find_element_by_xpath('//*[@id="ueditor_2"]').click()
+    write_ans('//*[@id="ueditor_2"]',inter2)
+elif "第二空" in answer:
+    inter1 = answer.split("第二空：")[-1]
+    inter0 = answer.split("第二空：")[0][4:]
+    time.sleep(1)
+    driver.find_element_by_xpath('//*[@id="ueditor_0"]').click()
+    write_ans('//*[@id="ueditor_0"]',inter0)
+    time.sleep(1)
+    driver.find_element_by_xpath('//*[@id="ueditor_1"]').click()
+    write_ans('//*[@id="ueditor_1"]',inter1)
+else:
+    inter0 = answer.split("第一空：")[-1]
+    time.sleep(1)
+    driver.find_element_by_xpath('//*[@id="ueditor_0"]').click()
+    write_ans('//*[@id="ueditor_0"]',inter0)
+    
+    
+# 寻找答案函数
+def find_ans(que,res):
+    try:
+        answ = list(res[res["题目"] == que]["答案"])[0]
+        return answ
+    except:
+        return 0
+    
+# MAIN
+# 导入题库
+res = pd.read_excel("res.xlsx")
+
+## 完成自动填写选择题
+url = input("请输入链接：")
+driver = webdriver.Chrome()
+driver.implicitly_wait(5)
+cookies = [{'domain': '.chaoxing.com', 'httpOnly': False, 'name': 'thirdRegist', 'path': '/', 'secure': False, 'value': '0'}, {'domain': '.chaoxing.com', 'httpOnly': False, 'name': 'source', 'path': '/', 'secure': False, 'value': '""'}, {'domain': 'i.mooc.chaoxing.com', 'httpOnly': True, 'name': 'JSESSIONID', 'path': '/', 'secure': False, 'value': '86C935EFBD26B8AC1567C9C6804A0CD4'}, {'domain': '.chaoxing.com', 'expiry': 1606039365, 'httpOnly': False, 'name': 'DSSTASH_LOG', 'path': '/', 'secure': False, 'value': 'C_38-UN_5306-US_108484974-T_1603447366659'}, {'domain': '.chaoxing.com', 'expiry': 1606039365, 'httpOnly': False, 'name': 'xxtenc', 'path': '/', 'secure': False, 'value': '9b8dfa1614a5c3898a426f9754ae5415'}, {'domain': '.chaoxing.com', 'expiry': 1606039365, 'httpOnly': False, 'name': 'UID', 'path': '/', 'secure': False, 'value': '108484974'}, {'domain': '.chaoxing.com', 'expiry': 1606039365, 'httpOnly': True, 'name': 'vc3', 'path': '/', 'secure': False, 'value': 'fm%2B71sn5lHJVnWxFB1uNnZgwMeM4svBMXqxeKTxLsXZp%2FuIIaneK0QArfcOpNtfbOLpxtitUsddbTZOE9aNm%2BuwCuOIg%2BLBQm8PZZgfEX59zr5jh8NvJtviutaaxpyg4S%2FWB4P9NhUodicm%2F%2FkvI04hBuFqB7fN1sRtrB5BUZlA%3Def1f713f05d79c19e290a7c89f35f466'}, {'domain': '.chaoxing.com', 'expiry': 1606039365, 'httpOnly': True, 'name': 'vc', 'path': '/', 'secure': False, 'value': '5BFEAE5591B3C488B971AF00EFA9867D'}, {'domain': '.chaoxing.com', 'expiry': 1603533770, 'httpOnly': False, 'name': 'tl', 'path': '/', 'secure': False, 'value': '1'}, {'domain': '.chaoxing.com', 'expiry': 1606039365, 'httpOnly': True, 'name': 'vc2', 'path': '/', 'secure': False, 'value': '87310B48CD4D1FFE34871632F82E90B8'}, {'domain': '.chaoxing.com', 'expiry': 1606039365, 'httpOnly': False, 'name': '_d', 'path': '/', 'secure': False, 'value': '1603447366658'}, {'domain': '.chaoxing.com', 'expiry': 1606039365, 'httpOnly': False, 'name': '_uid', 'path': '/', 'secure': False, 'value': '108484974'}, {'domain': '.chaoxing.com', 'expiry': 1606039365, 'httpOnly': False, 'name': 'uf', 'path': '/', 'secure': False, 'value': 'b2d2c93beefa90dc9188507c473782d1d0adaab9a33442b0bd78385eb9f576597aa90463a84b720841ae5a607e3c33dd2a80cd29a298e70788b83130e7eb470494bd1582608cbc56aa8e8071455740dd41f23d7060bd78cc1288b607060c1fb6916675ce185bde81aa2ebad65cd196bb'}, {'domain': '.chaoxing.com', 'expiry': 1606039365, 'httpOnly': False, 'name': 'fid', 'path': '/', 'secure': False, 'value': '18078'}, {'domain': 'i.mooc.chaoxing.com', 'httpOnly': False, 'name': 'route', 'path': '/', 'secure': False, 'value': '25c5b3ea765bd1e462f3554e01560f4d'}, {'domain': '.chaoxing.com', 'expiry': 1606039365, 'httpOnly': False, 'name': 'lv', 'path': '/', 'secure': False, 'value': '1'}]
+# 清除一下cookie
+driver.delete_all_cookies()
+driver.implicitly_wait(5)
+# 打开浏览器后添加访问地址后，添加cookie
+driver.get(url)
+for i in range(len(cookies)):
+    time.sleep(0.1)
+    driver.add_cookie(cookies[i])
+driver.get(url)
+driver.implicitly_wait(5)
+pagesource = driver.page_source
+soup = BeautifulSoup(pagesource)
+
+question = soup.find_all(class_ ="clearfix")
+ques = question[3].text.strip('\n').strip('\t').strip('\n').split('\t')[-1]
+answe = find_ans(ques,res)
+answer = [i.text for i in soup.find_all('a',href='javascript:void(0);')]
+try:
+    choo = answer.index(answe)
+except:
+    choo = -1
+if choo==0:
+    select_A()
+elif choo==1:
+    select_B()
+elif choo==2:
+    select_C()
+elif choo==3:
+    select_D()
+else:
+    pass
+
+
+## 完成自动填写填空题
+url = input("请输入链接：")
+driver = webdriver.Chrome()
+driver.implicitly_wait(5)
+cookies = [{'domain': '.chaoxing.com', 'httpOnly': False, 'name': 'thirdRegist', 'path': '/', 'secure': False, 'value': '0'}, {'domain': '.chaoxing.com', 'httpOnly': False, 'name': 'source', 'path': '/', 'secure': False, 'value': '""'}, {'domain': 'i.mooc.chaoxing.com', 'httpOnly': True, 'name': 'JSESSIONID', 'path': '/', 'secure': False, 'value': '86C935EFBD26B8AC1567C9C6804A0CD4'}, {'domain': '.chaoxing.com', 'expiry': 1606039365, 'httpOnly': False, 'name': 'DSSTASH_LOG', 'path': '/', 'secure': False, 'value': 'C_38-UN_5306-US_108484974-T_1603447366659'}, {'domain': '.chaoxing.com', 'expiry': 1606039365, 'httpOnly': False, 'name': 'xxtenc', 'path': '/', 'secure': False, 'value': '9b8dfa1614a5c3898a426f9754ae5415'}, {'domain': '.chaoxing.com', 'expiry': 1606039365, 'httpOnly': False, 'name': 'UID', 'path': '/', 'secure': False, 'value': '108484974'}, {'domain': '.chaoxing.com', 'expiry': 1606039365, 'httpOnly': True, 'name': 'vc3', 'path': '/', 'secure': False, 'value': 'fm%2B71sn5lHJVnWxFB1uNnZgwMeM4svBMXqxeKTxLsXZp%2FuIIaneK0QArfcOpNtfbOLpxtitUsddbTZOE9aNm%2BuwCuOIg%2BLBQm8PZZgfEX59zr5jh8NvJtviutaaxpyg4S%2FWB4P9NhUodicm%2F%2FkvI04hBuFqB7fN1sRtrB5BUZlA%3Def1f713f05d79c19e290a7c89f35f466'}, {'domain': '.chaoxing.com', 'expiry': 1606039365, 'httpOnly': True, 'name': 'vc', 'path': '/', 'secure': False, 'value': '5BFEAE5591B3C488B971AF00EFA9867D'}, {'domain': '.chaoxing.com', 'expiry': 1603533770, 'httpOnly': False, 'name': 'tl', 'path': '/', 'secure': False, 'value': '1'}, {'domain': '.chaoxing.com', 'expiry': 1606039365, 'httpOnly': True, 'name': 'vc2', 'path': '/', 'secure': False, 'value': '87310B48CD4D1FFE34871632F82E90B8'}, {'domain': '.chaoxing.com', 'expiry': 1606039365, 'httpOnly': False, 'name': '_d', 'path': '/', 'secure': False, 'value': '1603447366658'}, {'domain': '.chaoxing.com', 'expiry': 1606039365, 'httpOnly': False, 'name': '_uid', 'path': '/', 'secure': False, 'value': '108484974'}, {'domain': '.chaoxing.com', 'expiry': 1606039365, 'httpOnly': False, 'name': 'uf', 'path': '/', 'secure': False, 'value': 'b2d2c93beefa90dc9188507c473782d1d0adaab9a33442b0bd78385eb9f576597aa90463a84b720841ae5a607e3c33dd2a80cd29a298e70788b83130e7eb470494bd1582608cbc56aa8e8071455740dd41f23d7060bd78cc1288b607060c1fb6916675ce185bde81aa2ebad65cd196bb'}, {'domain': '.chaoxing.com', 'expiry': 1606039365, 'httpOnly': False, 'name': 'fid', 'path': '/', 'secure': False, 'value': '18078'}, {'domain': 'i.mooc.chaoxing.com', 'httpOnly': False, 'name': 'route', 'path': '/', 'secure': False, 'value': '25c5b3ea765bd1e462f3554e01560f4d'}, {'domain': '.chaoxing.com', 'expiry': 1606039365, 'httpOnly': False, 'name': 'lv', 'path': '/', 'secure': False, 'value': '1'}]
+# 清除一下cookie
+driver.delete_all_cookies()
+driver.implicitly_wait(5)
+# 打开浏览器后添加访问地址后，添加cookie
+driver.get(url)
+for i in range(len(cookies)):
+    time.sleep(0.1)
+    driver.add_cookie(cookies[i])
+driver.get(url)
+driver.implicitly_wait(5)
+
+pagesource = driver.page_source
+soup = BeautifulSoup(pagesource)
+question = soup.find_all('div',class_='clearfix')
+ques = question[3].text.strip('\n').strip('\t').strip('\n').split('\t')[-1]
+answer = find_ans(ques,res)
+if "第三空" in answer:
+    inter2 = answer.split("第三空：")[-1]
+    inter1 = answer.split("第三空：")[0].split("第二空：")[-1]
+    inter1 = answer.split("第三空：")[0].split("第二空：")[0][4:]
+    driver.find_element_by_xpath('//*[@id="ueditor_0"]').click()
+    write_ans('//*[@id="ueditor_0"]',inter0)
+    driver.find_element_by_xpath('//*[@id="ueditor_1"]').click()
+    write_ans('//*[@id="ueditor_1"]',inter1)
+    driver.find_element_by_xpath('//*[@id="ueditor_2"]').click()
+    write_ans('//*[@id="ueditor_2"]',inter2)
+elif "第二空" in answer:
+    inter1 = answer.split("第二空：")[-1]
+    inter0 = answer.split("第二空：")[0][4:]
+    driver.find_element_by_xpath('//*[@id="ueditor_0"]').click()
+    write_ans('//*[@id="ueditor_0"]',inter0)
+    driver.find_element_by_xpath('//*[@id="ueditor_1"]').click()
+    write_ans('//*[@id="ueditor_1"]',inter1)
+else:
+    inter0 = answer.split("第一空：")[-1]
+    driver.find_element_by_xpath('//*[@id="ueditor_0"]').click()
+    write_ans('//*[@id="ueditor_0"]',inter0)
+    
+# 填空
+for i in range(12):
+    time.sleep(1)
+    driver.find_element_by_xpath('//*[@id="ueditor_0"]').click()
+    write_ans('//*[@id="ueditor_0"]',"答案")
+    driver.find_element_by_xpath('//*[@id="ueditor_1"]').click()
+    write_ans('//*[@id="ueditor_1"]',"答案")
+    next_ques()
+    
+## 爬取题库
+def get_answer(url):
+    driver = webdriver.Chrome()
+    driver.implicitly_wait(5)
+    cookies = [{'domain': '.chaoxing.com', 'httpOnly': False, 'name': 'thirdRegist', 'path': '/', 'secure': False, 'value': '0'}, {'domain': '.chaoxing.com', 'httpOnly': False, 'name': 'source', 'path': '/', 'secure': False, 'value': '""'}, {'domain': 'i.mooc.chaoxing.com', 'httpOnly': True, 'name': 'JSESSIONID', 'path': '/', 'secure': False, 'value': '86C935EFBD26B8AC1567C9C6804A0CD4'}, {'domain': '.chaoxing.com', 'expiry': 1606039365, 'httpOnly': False, 'name': 'DSSTASH_LOG', 'path': '/', 'secure': False, 'value': 'C_38-UN_5306-US_108484974-T_1603447366659'}, {'domain': '.chaoxing.com', 'expiry': 1606039365, 'httpOnly': False, 'name': 'xxtenc', 'path': '/', 'secure': False, 'value': '9b8dfa1614a5c3898a426f9754ae5415'}, {'domain': '.chaoxing.com', 'expiry': 1606039365, 'httpOnly': False, 'name': 'UID', 'path': '/', 'secure': False, 'value': '108484974'}, {'domain': '.chaoxing.com', 'expiry': 1606039365, 'httpOnly': True, 'name': 'vc3', 'path': '/', 'secure': False, 'value': 'fm%2B71sn5lHJVnWxFB1uNnZgwMeM4svBMXqxeKTxLsXZp%2FuIIaneK0QArfcOpNtfbOLpxtitUsddbTZOE9aNm%2BuwCuOIg%2BLBQm8PZZgfEX59zr5jh8NvJtviutaaxpyg4S%2FWB4P9NhUodicm%2F%2FkvI04hBuFqB7fN1sRtrB5BUZlA%3Def1f713f05d79c19e290a7c89f35f466'}, {'domain': '.chaoxing.com', 'expiry': 1606039365, 'httpOnly': True, 'name': 'vc', 'path': '/', 'secure': False, 'value': '5BFEAE5591B3C488B971AF00EFA9867D'}, {'domain': '.chaoxing.com', 'expiry': 1603533770, 'httpOnly': False, 'name': 'tl', 'path': '/', 'secure': False, 'value': '1'}, {'domain': '.chaoxing.com', 'expiry': 1606039365, 'httpOnly': True, 'name': 'vc2', 'path': '/', 'secure': False, 'value': '87310B48CD4D1FFE34871632F82E90B8'}, {'domain': '.chaoxing.com', 'expiry': 1606039365, 'httpOnly': False, 'name': '_d', 'path': '/', 'secure': False, 'value': '1603447366658'}, {'domain': '.chaoxing.com', 'expiry': 1606039365, 'httpOnly': False, 'name': '_uid', 'path': '/', 'secure': False, 'value': '108484974'}, {'domain': '.chaoxing.com', 'expiry': 1606039365, 'httpOnly': False, 'name': 'uf', 'path': '/', 'secure': False, 'value': 'b2d2c93beefa90dc9188507c473782d1d0adaab9a33442b0bd78385eb9f576597aa90463a84b720841ae5a607e3c33dd2a80cd29a298e70788b83130e7eb470494bd1582608cbc56aa8e8071455740dd41f23d7060bd78cc1288b607060c1fb6916675ce185bde81aa2ebad65cd196bb'}, {'domain': '.chaoxing.com', 'expiry': 1606039365, 'httpOnly': False, 'name': 'fid', 'path': '/', 'secure': False, 'value': '18078'}, {'domain': 'i.mooc.chaoxing.com', 'httpOnly': False, 'name': 'route', 'path': '/', 'secure': False, 'value': '25c5b3ea765bd1e462f3554e01560f4d'}, {'domain': '.chaoxing.com', 'expiry': 1606039365, 'httpOnly': False, 'name': 'lv', 'path': '/', 'secure': False, 'value': '1'}]
+    # 清除一下cookie
+    driver.delete_all_cookies()
+    driver.implicitly_wait(5)
+    # 打开浏览器后添加访问地址后，添加cookie
+    driver.get(url)
+    for i in range(len(cookies)):
+        time.sleep(0.1)
+        driver.add_cookie(cookies[i])
+    driver.get(url)
+    driver.implicitly_wait(5)
+    driver.find_element_by_link_text("查看").click()
+
+    pagesource = driver.page_source
+    soup = BeautifulSoup(pagesource)
+    question = soup.find_all(class_ ="fl clearfix")
+
+    # 问题 questions
+    questions = []
+    for i in question:
+        questions.append(i.text)
+
+    # 选择题答案 answers
+    answers = []
+    answer = soup.find_all(class_ = 'Py_answer clearfix')
+    for i in answer:
+        answers.append(i.find("span").text.split('\n')[2][-1])
+
+    # 选项 chooses
+    choose = soup.find_all(style="cursor:default")
+    chooses = []
+    s = 1
+    ls = []
+    for i in choose:
+        ls.append(i.text)
+        if s%4==0:
+            chooses.append(ls)
+            ls = []
+        s+=1
+
+    # 填空题答案
+    blank = soup.find_all('span',class_ = "font14")
+    blanks = []
+    for i in blank:
+        str1 = i.text
+        try:
+            str1 = str1.strip("\n").split("\xa0")[-2]+str1.strip("\n").split("\xa0")[-1]
+        except:
+            str1 = str1.strip("\n").split("\xa0")[-1]
+        if(str1==""):
+            pass
+        else:
+            blanks.append(str1)
+    index = []
+    for s in range(len(blanks)):
+        if "第二空" in blanks[s]:
+            blanks[s-1] = blanks[s-1]+blanks[s]
+            index.append(s)
+        elif "第三空" in blanks[s]:
+            blanks[s-2] = blanks[s-2]+blanks[s]
+            index.append(s)
+    new_blanks = []
+    for i in range(len(blanks)):
+        if (i in index):
+            continue
+        else:
+            new_blanks.append(blanks[i])
+
+    # 选择根据答案找出选项
+    true = []
+    mapping = {"A":0,"B":1,"C":2,"D":3}
+    for i in range(len(chooses)):
+        true.append(chooses[i][mapping[answers[i]]])
+    true = true+new_blanks
+    dic = {"题目":questions,"答案":true}
+    return pd.DataFrame(dic)
+#MAIN
+url = input("请输入链接：")
+page0 = get_answer(url)
+'''url = input("请输入链接：")
+page1 = get_answer(url)
+url = input("请输入链接：")
+page2 = get_answer(url)
+url = input("请输入链接：")
+page3 = get_answer(url)
+url = input("请输入链接：")
+page4 = get_answer(url)
+url = input("请输入链接：")
+page5 = get_answer(url)
+url = input("请输入链接：")
+page6 = get_answer(url)
+url = input("请输入链接：")
+page7 = get_answer(url)
+url = input("请输入链接：")
+page8 = get_answer(url)
+url = input("请输入链接：")
+page9 = get_answer(url)
+res = pd.concat([page0,page1,page2,page3,page4,page5,page6,page7,page8,page9],axis=0,ignore_index=True)
+# 判断是否有重复项，并删除重复项
+res.duplicated()
+res = res.drop_duplicates() '''
+
