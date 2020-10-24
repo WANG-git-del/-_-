@@ -1,0 +1,73 @@
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.common.by import By
+from selenium import webdriver
+from lxml import etree
+import pandas as pd
+import requests
+import time
+import re
+driver = webdriver.Chrome()
+url = 'https://movie.douban.com/subject/26266893/comments?status=P'
+driver.get(url)                                                                     # 获取网页源码数据
+dom = etree.HTML(driver.page_source,etree.HTMLParser(encoding = "utf-8"))           # 网页源码解析 得到一个dom文件
+
+cookies_str = 'bid=BdJNl_sSoLA; ap_v=0,6.0; __utmc=30149280; __utmc=223695111; __utmz=223695111.1588993232.1.1.utmcsr=(direct)|utmccn=(direct)|utmcmd=(none); __utma=30149280.1236824993.1588993232.1588993232.1588998475.2; __utmz=30149280.1588998475.2.2.utmcsr=movie.douban.com|utmccn=(referral)|utmcmd=referral|utmcct=/subject/26266893/comments; __utmb=30149280.1.10.1588998475; _pk_ses.100001.4cf6=*; __utma=223695111.360324963.1588993232.1588993232.1588998518.2; __utmb=223695111.0.10.1588998518; dbcl2="216526634:CBzQRT+e3QY"; ck=UW-m; __gads=ID=bf19bae967c1a213:T=1589000259:S=ALNI_MaOOVXFuZR2W7Tv9XjhcmJvCsrtew; _pk_id.100001.4cf6=8d9d1a933684ac3d.1588993231.2.1589000299.1588993251.; push_noty_num=0; push_doumail_num=0'
+cookies = {}
+for i in cookies_str.split(";"):                                                    # 将cookies整理成所需格式
+    k,v = i.split("=",1)
+    cookies[k] = v
+def get_web_data(dom = None,cookies = None): 
+    names = dom.xpath("//div[@class = 'comment-item']//span[@class = 'comment-info']/a/text()")           ## 用户名
+    ratings = dom.xpath("//div[@class = 'comment-item']//span[@class = 'comment-info']/span[2]/@class")   ## 评分
+    times = dom.xpath('//div[@class="comment-item"]//span[@class="comment-info"]/span[@class="comment-time "]/@title')      ## 发布时间
+    message = dom.xpath("//div[@class = 'comment-item']//span[@class = 'short']/text()")                  ## 短评内容
+    votes = dom.xpath("//div[@class = 'comment-item']/div[@class = 'comment']//span[@class = 'votes']/text()") ## 赞同数量
+    user_url = dom.xpath("//div[@class = 'comment-item']//div[@class = 'comment']//span[@class = 'comment-info']/a/@href")   #用户主页网址
+    cities = []
+    load_times = []
+    for i in user_url:
+        web_data = requests.get(i,cookies = cookies,headers={"user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.132 Safari/537.36"})
+        dom_url = etree.HTML(web_data.text,etree.HTMLParser(encoding = "utf-8"))
+        address = dom_url.xpath('//div[@id="wrapper"]//div[@class = "user-info"]/a/text()')                     # 居住地址
+        load_time = dom_url.xpath('//div[@id="wrapper"]//div[@class = "user-info"]//div[@class = "pl"]/text()') # 入会时间
+        cities.append(address)
+        load_times.append(load_time)
+        time.sleep(2)
+    ratings = ['' if 'rating' not in i else int(re.findall('\d{2}',i)[0]) for i in ratings ]   # 评分数据整理
+    load_times = ['' if i==[] else i[1].strip()[0:-2] for i in load_times] # 入会时间数据处理
+    cities = ['' if i ==[] else i[0] for i in cities]  # 居住地的数据处理
+    data = pd.DataFrame({
+        '用户名':names,
+        '居住城市':cities,
+        '加入时间':load_times,
+        '评分':ratings,
+        '发表时间':times,
+        '短评正文':message,
+        '赞同数量':votes
+    })
+    return data
+data = get_web_data(dom = dom,cookies = cookies)
+all_data = pd.DataFrame()
+wait = WebDriverWait(driver,20)
+while True:
+    wait.until(  
+        EC.element_to_be_clickable(   # 通过该项条件确认网页是否已经加载进来
+            (By.CSS_SELECTOR, '#comments > div:nth-child(20) > div.comment > h3 > span.comment-info > a') # 当前页最后一个“用户”按钮是否可以点击
+        )
+    )
+
+    dom = etree.HTML(driver.page_source, etree.HTMLParser(encoding='utf-8'))   # 网页源码解析，得到一个dom文件
+    data = get_web_data(dom=dom, cookies=cookies)
+    all_data = pd.concat([all_data, data], axis=0)
+
+    if driver.find_element_by_css_selector('#paginator > a.next')==[]:   # 判定是否还有“后页”按钮
+        break
+    
+    confirm_bnt = wait.until(
+        EC.element_to_be_clickable(
+            (By.CSS_SELECTOR, '#paginator > a.next')
+        )
+    )
+    confirm_bnt.click()   # 执行翻页操作
+data.to_csv("douban.csv",index=None,encoding="GB18030")
